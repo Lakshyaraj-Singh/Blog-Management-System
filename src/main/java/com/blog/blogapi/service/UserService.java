@@ -30,4 +30,14 @@ public class UserService {
 
         return userRepository.save(user);
     }
+    public User validateLogin(String username, String rawPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        return user;
+    }
 }
