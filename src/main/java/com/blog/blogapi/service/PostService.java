@@ -3,6 +3,8 @@ package com.blog.blogapi.service;
 import com.blog.blogapi.dto.PostRequest;
 import com.blog.blogapi.entity.Post;
 import com.blog.blogapi.entity.User;
+import com.blog.blogapi.exception.ResourceNotFoundException;
+import com.blog.blogapi.exception.UnauthorizedActionException;
 import com.blog.blogapi.repository.PostRepository;
 import com.blog.blogapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +21,7 @@ public class PostService {
 
     public Post createPost(PostRequest request, String username) {
         User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Post post = new Post();
         post.setTitle(request.getTitle());
@@ -35,14 +37,14 @@ public class PostService {
 
     public Post getPostById(Long id) {
         return postRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Post not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     }
 
     public Post updatePost(Long id, PostRequest request, String username) {
         Post post = getPostById(id);
 
         if (!post.getAuthor().getUsername().equals(username)) {
-            throw new RuntimeException("You are not authorized to update this post");
+            throw new UnauthorizedActionException("You are not authorized to update this post");
         }
 
         post.setTitle(request.getTitle());
@@ -54,7 +56,7 @@ public class PostService {
         Post post = getPostById(id);
 
         if (!post.getAuthor().getUsername().equals(username)) {
-            throw new RuntimeException("You are not authorized to delete this post");
+            throw new UnauthorizedActionException("You are not authorized to delete this post");
         }
 
         postRepository.delete(post);

@@ -2,6 +2,8 @@ package com.blog.blogapi.service;
 
 import com.blog.blogapi.dto.RegisterRequest;
 import com.blog.blogapi.entity.User;
+import com.blog.blogapi.exception.DuplicateResourceException;
+import com.blog.blogapi.exception.InvalidCredentialsException;
 import com.blog.blogapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,10 +18,10 @@ public class UserService {
 
     public User registerUser(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already taken");
+            throw new DuplicateResourceException("Username already taken");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new DuplicateResourceException("Email already registered");
         }
 
         User user = new User();
@@ -32,10 +34,10 @@ public class UserService {
     }
     public User validateLogin(String username, String rawPassword) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
         return user;
